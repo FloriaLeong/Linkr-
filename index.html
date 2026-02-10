@@ -27,6 +27,10 @@
       border-radius: 10px;
     }
   </style>
+  <script>
+    // 解决浏览器环境没有 process 变量导致的白屏崩溃
+    window.process = window.process || { env: {} };
+  </script>
 <script type="importmap">
 {
   "imports": {
@@ -42,5 +46,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
   <div id="root"></div>
+  <!-- 显式引入入口文件 -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
