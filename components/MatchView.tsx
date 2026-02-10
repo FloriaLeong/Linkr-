@@ -3,7 +3,24 @@ import React, { useState } from 'react';
 import { UserProfile, MatchResult } from '../types.ts';
 import { MOCK_USERS } from '../constants.ts';
 import { getMatchingResults } from '../services/geminiService.ts';
-import { Search, Sparkles, AlertCircle, MessageSquare, Heart, ExternalLink, ArrowRight, Loader2, Filter, Crown, Users } from 'lucide-react';
+import { 
+  Search, 
+  Sparkles, 
+  AlertCircle, 
+  MessageSquare, 
+  Heart, 
+  ExternalLink, 
+  ArrowRight, 
+  Loader2, 
+  Filter, 
+  Crown, 
+  Users,
+  Phone,
+  Mail,
+  Linkedin,
+  Copy,
+  Check
+} from 'lucide-react';
 
 const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
   const [query, setQuery] = useState('');
@@ -11,6 +28,7 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
   const [results, setResults] = useState<(MatchResult & { user: UserProfile })[]>([]);
   const [selectedResult, setSelectedResult] = useState<(MatchResult & { user: UserProfile }) | null>(null);
   const [error, setError] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleMatch = async () => {
     if (!query.trim()) return;
@@ -34,6 +52,13 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = (text: string, fieldId: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   return (
@@ -171,15 +196,71 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
                         </div>
                      </div>
 
-                     <div className="flex gap-4 pt-4 border-t border-slate-100">
-                        <button className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none">
-                           <MessageSquare size={20} />
-                           发送联系请求
-                        </button>
-                        <button className="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center gap-2 outline-none">
-                           <ExternalLink size={20} />
-                           查看完整档案
-                        </button>
+                     <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <MessageSquare size={14} className="text-indigo-600" />
+                          联系方式
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           {/* 电话 */}
+                           <div className="p-4 bg-slate-50 rounded-2xl flex items-center justify-between group hover:bg-indigo-50 transition-colors">
+                              <div className="flex items-center gap-3 min-w-0">
+                                 <div className="p-2 bg-white rounded-lg text-indigo-600 shadow-sm"><Phone size={16} /></div>
+                                 <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">电话号码</p>
+                                    <p className="text-sm font-bold text-slate-700 truncate">{selectedResult.user.phone || '未填写'}</p>
+                                 </div>
+                              </div>
+                              <button 
+                                onClick={() => handleCopy(selectedResult.user.phone, 'phone')}
+                                className={`p-2 rounded-xl transition-all ${copiedField === 'phone' ? 'text-emerald-500 bg-emerald-100' : 'text-slate-400 hover:text-indigo-600 hover:bg-white shadow-sm'}`}
+                              >
+                                 {copiedField === 'phone' ? <Check size={16} /> : <Copy size={16} />}
+                              </button>
+                           </div>
+                           {/* 邮箱 */}
+                           <div className="p-4 bg-slate-50 rounded-2xl flex items-center justify-between group hover:bg-indigo-50 transition-colors">
+                              <div className="flex items-center gap-3 min-w-0">
+                                 <div className="p-2 bg-white rounded-lg text-indigo-600 shadow-sm"><Mail size={16} /></div>
+                                 <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">电子邮箱</p>
+                                    <p className="text-sm font-bold text-slate-700 truncate">{selectedResult.user.email || '未填写'}</p>
+                                 </div>
+                              </div>
+                              <button 
+                                onClick={() => handleCopy(selectedResult.user.email, 'email')}
+                                className={`p-2 rounded-xl transition-all ${copiedField === 'email' ? 'text-emerald-500 bg-emerald-100' : 'text-slate-400 hover:text-indigo-600 hover:bg-white shadow-sm'}`}
+                              >
+                                 {copiedField === 'email' ? <Check size={16} /> : <Copy size={16} />}
+                              </button>
+                           </div>
+                           {/* LinkedIn */}
+                           <div className="sm:col-span-2 p-4 bg-slate-50 rounded-2xl flex items-center justify-between group hover:bg-indigo-50 transition-colors">
+                              <div className="flex items-center gap-3 min-w-0">
+                                 <div className="p-2 bg-white rounded-lg text-indigo-600 shadow-sm"><Linkedin size={16} /></div>
+                                 <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">LinkedIn</p>
+                                    <p className="text-sm font-bold text-slate-700 truncate">{selectedResult.user.linkedin || '未填写'}</p>
+                                 </div>
+                              </div>
+                              <button 
+                                onClick={() => handleCopy(selectedResult.user.linkedin, 'linkedin')}
+                                className={`p-2 rounded-xl transition-all ${copiedField === 'linkedin' ? 'text-emerald-500 bg-emerald-100' : 'text-slate-400 hover:text-indigo-600 hover:bg-white shadow-sm'}`}
+                              >
+                                 {copiedField === 'linkedin' ? <Check size={16} /> : <Copy size={16} />}
+                              </button>
+                           </div>
+                        </div>
+                        <div className="pt-2 flex gap-4">
+                           <button className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none">
+                              <MessageSquare size={18} />
+                              立即私信
+                           </button>
+                           <button className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center gap-2 outline-none">
+                              <ExternalLink size={18} />
+                              完整档案
+                           </button>
+                        </div>
                      </div>
                   </div>
                ) : (

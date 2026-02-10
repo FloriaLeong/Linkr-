@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { UserProfile } from './types.ts';
+import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { UserProfile, PlanDuration } from './types.ts';
 import { MOCK_USERS } from './constants.ts';
 import ProfileView from './components/ProfileView.tsx';
 import MatchView from './components/MatchView.tsx';
@@ -22,10 +22,65 @@ import {
 } from 'lucide-react';
 
 const App: React.FC = () => {
+  // 默认登录用户：孙迈克 (管理员)
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[4]); 
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoginView, setIsLoginView] = useState(true);
+
+  // 注册/登录表单状态
+  const [authEmail, setAuthEmail] = useState('');
+  const [authName, setAuthName] = useState('');
+
+  const handleUpgrade = (duration: PlanDuration) => {
+    const now = new Date();
+    let expiry = new Date();
+    if (duration === PlanDuration.MONTH) expiry.setMonth(now.getMonth() + 1);
+    if (duration === PlanDuration.QUARTER) expiry.setMonth(now.getMonth() + 3);
+    if (duration === PlanDuration.YEAR) expiry.setFullYear(now.getFullYear() + 1);
+
+    setCurrentUser({
+      ...currentUser,
+      isPro: true,
+      expiryDate: expiry.toISOString().split('T')[0]
+    });
+  };
+
+  const handleAuthAction = () => {
+    if (isLoginView) {
+      // 模拟登录：如果是已存在的用户邮箱，则切换
+      const found = MOCK_USERS.find(u => u.email === authEmail);
+      if (found) setCurrentUser(found);
+    } else {
+      // 模拟注册：创建一个新用户并自动登录
+      const newUser: UserProfile = {
+        id: `u${Date.now()}`,
+        name: authName || '新用户',
+        avatar: `https://picsum.photos/seed/${Math.random()}/200`,
+        slogan: '新加入 Linkr 的人脉探索者',
+        role: '待完善',
+        industry: '待完善',
+        tags: [],
+        solving: '',
+        resources: '',
+        needs: '',
+        location: '未知',
+        completeness: 10,
+        isPro: false,
+        isAdmin: false,
+        matchCount: 0,
+        viewCount: 0,
+        requestCount: 0,
+        phone: '',
+        email: authEmail,
+        linkedin: ''
+      };
+      setCurrentUser(newUser);
+    }
+    setShowAuthModal(false);
+    setAuthEmail('');
+    setAuthName('');
+  };
 
   return (
     <Router>
@@ -33,7 +88,7 @@ const App: React.FC = () => {
         {/* 侧边栏 */}
         <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0 z-20`}>
           <div className="p-6 flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg">L</div>
+            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg text-white">L</div>
             {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-white">Linkr</span>}
           </div>
 
@@ -42,7 +97,11 @@ const App: React.FC = () => {
             <SidebarLink to="/dashboard" icon={<LayoutDashboard size={20} />} label="控制面板" />
             <SidebarLink to="/profile" icon={<Users size={20} />} label="个人资料" />
             <SidebarLink to="/upgrade" icon={<Crown size={20} />} label="Pro 会员权益" className="text-amber-400" />
-            <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
+            
+            {/* 权限控制：仅管理员可见 */}
+            {currentUser.isAdmin && (
+              <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
+            )}
           </nav>
 
           <div className="p-4 border-t border-indigo-800 space-y-4">
@@ -51,7 +110,9 @@ const App: React.FC = () => {
                   <img src={currentUser.avatar} alt="用户" className="w-10 h-10 rounded-full border-2 border-indigo-400" />
                   <div className="overflow-hidden">
                     <p className="text-sm font-semibold truncate text-white">{currentUser.name}</p>
-                    <p className="text-xs text-indigo-300 capitalize">{currentUser.isPro ? 'Pro 会员' : '免费版'}</p>
+                    <p className="text-xs text-indigo-300 capitalize">
+                      {currentUser.isAdmin ? '系统管理员' : currentUser.isPro ? 'Pro 会员' : '免费版'}
+                    </p>
                   </div>
                </div>
              )}
@@ -89,7 +150,6 @@ const App: React.FC = () => {
                 <MessageSquare size={20} />
               </button>
               <div className="h-8 w-px bg-slate-200 mx-2"></div>
-              {/* 点击头像触发登录/注册 */}
               <button 
                 onClick={() => {
                   setIsLoginView(true);
@@ -105,12 +165,16 @@ const App: React.FC = () => {
 
           <div className="p-8 max-w-7xl mx-auto w-full">
             <Routes>
-              {/* 首页严格设置为匹配页 */}
               <Route path="/" element={<MatchView user={currentUser} />} />
               <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
               <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
-              <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={() => setCurrentUser({...currentUser, isPro: true})} />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={handleUpgrade} />} />
+              
+              {/* 路由权限拦截 */}
+              <Route 
+                path="/admin" 
+                element={currentUser.isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />} 
+              />
             </Routes>
           </div>
         </main>
@@ -135,9 +199,27 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
+                     {!isLoginView && (
+                       <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-400 uppercase ml-1">姓名</label>
+                          <input 
+                            type="text" 
+                            placeholder="如何称呼您？" 
+                            className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
+                            value={authName}
+                            onChange={(e) => setAuthName(e.target.value)}
+                          />
+                       </div>
+                     )}
                      <div className="space-y-1">
                         <label className="text-xs font-bold text-slate-400 uppercase ml-1">手机号 / 邮箱</label>
-                        <input type="text" placeholder="请输入您的账号" className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" />
+                        <input 
+                          type="text" 
+                          placeholder="请输入您的账号" 
+                          className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                        />
                      </div>
                      <div className="space-y-1">
                         <label className="text-xs font-bold text-slate-400 uppercase ml-1">密码</label>
@@ -145,9 +227,12 @@ const App: React.FC = () => {
                      </div>
                   </div>
 
-                  <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none">
+                  <button 
+                    onClick={handleAuthAction}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none"
+                  >
                      {isLoginView ? <LogIn size={18} /> : <UserPlus size={18} />}
-                     {isLoginView ? '立即登录' : '注册新账号'}
+                     {isLoginView ? '立即登录' : '注册并登录'}
                   </button>
 
                   <div className="flex items-center justify-between px-2">

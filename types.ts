@@ -24,10 +24,14 @@ export interface UserProfile {
   location: string;
   completeness: number;
   isPro: boolean;
+  isAdmin: boolean; // 新增管理员权限标识
   matchCount: number;
   viewCount: number;
   requestCount: number;
   expiryDate?: string;
+  phone: string;
+  email: string;
+  linkedin: string;
 }
 
 export interface MatchResult {

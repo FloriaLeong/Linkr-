@@ -16,9 +16,13 @@ export const MOCK_USERS: UserProfile[] = [
     location: '上海',
     completeness: 85,
     isPro: false,
+    isAdmin: false,
     matchCount: 12,
     viewCount: 450,
-    requestCount: 5
+    requestCount: 5,
+    phone: '13800000001',
+    email: 'chen.anke@example.com',
+    linkedin: 'linkedin.com/in/chenanke'
   },
   {
     id: 'u2',
@@ -34,9 +38,13 @@ export const MOCK_USERS: UserProfile[] = [
     location: '北京',
     completeness: 95,
     isPro: true,
+    isAdmin: false,
     matchCount: 45,
     viewCount: 1200,
-    requestCount: 28
+    requestCount: 28,
+    phone: '13911112222',
+    email: 'zhang.shasha@vc-fund.com',
+    linkedin: 'linkedin.com/in/shashazhang'
   },
   {
     id: 'u3',
@@ -52,9 +60,13 @@ export const MOCK_USERS: UserProfile[] = [
     location: '深圳',
     completeness: 70,
     isPro: false,
+    isAdmin: false,
     matchCount: 8,
     viewCount: 300,
-    requestCount: 3
+    requestCount: 3,
+    phone: '13733334444',
+    email: 'david.li@logistics.com',
+    linkedin: 'linkedin.com/in/davidli-supplychain'
   },
   {
     id: 'u4',
@@ -70,9 +82,13 @@ export const MOCK_USERS: UserProfile[] = [
     location: '新加坡',
     completeness: 90,
     isPro: true,
+    isAdmin: false,
     matchCount: 33,
     viewCount: 890,
-    requestCount: 15
+    requestCount: 15,
+    phone: '+65 8888 9999',
+    email: 'elena.wu@marketing-asia.com',
+    linkedin: 'linkedin.com/in/elenawu'
   },
   {
     id: 'u5',
@@ -88,9 +104,13 @@ export const MOCK_USERS: UserProfile[] = [
     location: '杭州',
     completeness: 100,
     isPro: true,
+    isAdmin: true, // 孙迈克作为管理员
     matchCount: 19,
     viewCount: 620,
-    requestCount: 9
+    requestCount: 9,
+    phone: '13600009999',
+    email: 'mike.sun@esg-tools.io',
+    linkedin: 'linkedin.com/in/mikesun-founder'
   }
 ];
 
