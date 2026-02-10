@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { UserProfile, SubscriptionType } from './types';
+import React, { useState } from 'react';
+import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { UserProfile } from './types';
 import { MOCK_USERS } from './constants';
 import ProfileView from './components/ProfileView';
 import MatchView from './components/MatchView';
@@ -15,26 +15,31 @@ import {
   LogOut, 
   Settings,
   Bell,
-  MessageSquare
+  MessageSquare,
+  X,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[4]); 
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(true);
 
   return (
     <Router>
       <div className="flex h-screen bg-slate-50">
         {/* 侧边栏 */}
-        <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0`}>
+        <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0 z-20`}>
           <div className="p-6 flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg">L</div>
             {isSidebarOpen && <span className="text-xl font-bold tracking-tight">Linkr</span>}
           </div>
 
           <nav className="flex-1 px-4 py-4 space-y-2">
-            <SidebarLink to="/" icon={<LayoutDashboard size={20} />} label="控制面板" active />
-            <SidebarLink to="/match" icon={<Search size={20} />} label="智能匹配" />
+            <SidebarLink to="/" icon={<Search size={20} />} label="智能匹配" />
+            <SidebarLink to="/dashboard" icon={<LayoutDashboard size={20} />} label="控制面板" />
             <SidebarLink to="/profile" icon={<Users size={20} />} label="个人资料" />
             <SidebarLink to="/upgrade" icon={<Crown size={20} />} label="Pro 会员权益" className="text-amber-400" />
             <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
@@ -60,7 +65,7 @@ const App: React.FC = () => {
         {/* 主内容区 */}
         <main className="flex-1 overflow-auto">
           {/* 顶栏 */}
-          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-10 glass-effect">
+          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30 glass-effect">
             <button 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
               className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
@@ -83,47 +88,108 @@ const App: React.FC = () => {
               <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors">
                 <MessageSquare size={20} />
               </button>
-              <div className="h-8 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-2">
-                 <span className="text-sm font-medium text-slate-700 hidden sm:block">{currentUser.name}</span>
-                 <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100" />
-              </div>
+              <div className="h-8 w-px bg-slate-200 mx-2"></div>
+              <button 
+                onClick={() => {
+                  setIsLoginView(true);
+                  setShowAuthModal(true);
+                }}
+                className="flex items-center gap-2 hover:opacity-80 transition-all p-1 pr-3 rounded-full hover:bg-slate-50"
+              >
+                 <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100 shadow-sm" />
+                 <span className="text-sm font-bold text-slate-700 hidden sm:block">登录/注册</span>
+              </button>
             </div>
           </header>
 
           <div className="p-8 max-w-7xl mx-auto">
             <Routes>
-              <Route path="/" element={<Dashboard user={currentUser} />} />
+              {/* 首页改为匹配页 */}
+              <Route path="/" element={<MatchView user={currentUser} />} />
+              <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
               <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
-              <Route path="/match" element={<MatchView user={currentUser} />} />
               <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={() => setCurrentUser({...currentUser, isPro: true})} />} />
               <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </div>
         </main>
+
+        {/* 登录/注册模态框 */}
+        {showAuthModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+            <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+               <button 
+                 onClick={() => setShowAuthModal(false)}
+                 className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+               >
+                 <X size={20} />
+               </button>
+
+               <div className="p-10 space-y-8">
+                  <div className="text-center space-y-2">
+                     <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-bold text-3xl shadow-xl shadow-indigo-100 mx-auto mb-4">L</div>
+                     <h2 className="text-2xl font-bold text-slate-900">{isLoginView ? '欢迎回来' : '开启 Linkr 之旅'}</h2>
+                     <p className="text-slate-500">{isLoginView ? '登录以继续您的商务连接' : '加入全球最精准的人脉智能匹配网络'}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                     <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">手机号 / 邮箱</label>
+                        <input type="text" placeholder="请输入您的账号" className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" />
+                     </div>
+                     <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">密码</label>
+                        <input type="password" placeholder="••••••••" className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" />
+                     </div>
+                  </div>
+
+                  <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                     {isLoginView ? <LogIn size={18} /> : <UserPlus size={18} />}
+                     {isLoginView ? '立即登录' : '注册新账号'}
+                  </button>
+
+                  <div className="flex items-center justify-between px-2">
+                     <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors">忘记密码？</button>
+                     <button 
+                       onClick={() => setIsLoginView(!isLoginView)}
+                       className="text-xs font-bold text-indigo-600 hover:underline"
+                     >
+                       {isLoginView ? '还没有账号？去注册' : '已有账号？去登录'}
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
       </div>
     </Router>
   );
 };
 
-const SidebarLink: React.FC<{ to: string, icon: React.ReactNode, label: string, active?: boolean, className?: string }> = ({ to, icon, label, active, className }) => (
-  <Link 
-    to={to} 
-    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${active ? 'bg-indigo-700 text-white shadow-lg' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'} ${className || ''}`}
-  >
-    {icon}
-    <span className="text-sm font-medium">{label}</span>
-  </Link>
-);
+const SidebarLink: React.FC<{ to: string, icon: React.ReactNode, label: string, className?: string }> = ({ to, icon, label, className }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <Link 
+      to={to} 
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${isActive ? 'bg-indigo-700 text-white shadow-lg' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'} ${className || ''}`}
+    >
+      {icon}
+      <span className="text-sm font-medium">{label}</span>
+    </Link>
+  );
+};
 
 const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
-  <div className="space-y-8">
+  <div className="space-y-8 animate-in fade-in duration-500">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">欢迎回来, {user.name}!</h1>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">控制面板</h1>
         <p className="text-slate-500">本周您的有效人脉网络增长了 <span className="text-indigo-600 font-semibold">+12%</span>。</p>
       </div>
-      <Link to="/match" className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2 w-fit">
+      <Link to="/" className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2 w-fit">
         <Search size={18} />
         发起智能匹配
       </Link>

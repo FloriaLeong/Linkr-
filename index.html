@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', "Microsoft YaHei", sans-serif; }
+    body { font-family: 'Inter', "Microsoft YaHei", sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+    #root { min-height: 100vh; }
     .glass-effect {
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(10px);
@@ -26,10 +27,33 @@
       background: #e2e8f0;
       border-radius: 10px;
     }
+    /* 简单的首屏加载动画，防止白屏时的空洞感 */
+    .initial-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f8fafc;
+    }
+    .loader-icon {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #4f46e5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
   <script>
     // 解决浏览器环境没有 process 变量导致的白屏崩溃
     window.process = window.process || { env: {} };
+    // 如果没有 API_KEY 环境变量，在非生产环境设置占位符防止某些 SDK 报错
+    if (!window.process.env.API_KEY) {
+      window.process.env.API_KEY = "";
+    }
   </script>
 <script type="importmap">
 {
@@ -45,8 +69,24 @@
 </script>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <div id="root"></div>
-  <!-- 显式引入入口文件 -->
+  <div id="root">
+    <div class="initial-loader" id="initial-loader">
+      <div class="loader-icon"></div>
+    </div>
+  </div>
+  <!-- 显式引入入口文件，确保在 importmap 解析后执行 -->
   <script type="module" src="./index.tsx"></script>
+  <script>
+    // 应用加载完成后隐藏 loader
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('initial-loader');
+      if (loader) {
+        setTimeout(() => {
+          loader.style.opacity = '0';
+          setTimeout(() => loader.remove(), 300);
+        }, 500);
+      }
+    });
+  </script>
 </body>
 </html>
