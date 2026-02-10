@@ -1,0 +1,125 @@
+
+import { UserProfile, Package, PlanDuration } from './types';
+
+export const MOCK_USERS: UserProfile[] = [
+  {
+    id: 'u1',
+    name: '陈安可',
+    avatar: 'https://picsum.photos/seed/alex/200',
+    slogan: '助力初创公司构建高性能工程团队。',
+    role: '技术顾问',
+    industry: '互联网/科技',
+    tags: ['SaaS', '架构设计', '团队扩张', '招聘'],
+    solving: '成长期公司的技术瓶颈与研发效率问题。',
+    resources: '资深工程师人才库、技术架构蓝图、大厂研发管理经验。',
+    needs: '寻找技术合伙人或 CTO 顾问的初创团队。',
+    location: '上海',
+    completeness: 85,
+    isPro: false,
+    matchCount: 12,
+    viewCount: 450,
+    requestCount: 5
+  },
+  {
+    id: 'u2',
+    name: '张莎莎',
+    avatar: 'https://picsum.photos/seed/sarah/200',
+    slogan: '连接风险投资与深科技创新。',
+    role: '投资经理',
+    industry: '风险投资',
+    tags: ['投融资', '硬科技', 'A轮', '战略规划'],
+    solving: '为 AI 初创企业提供资金支持和战略指导。',
+    resources: '投资资金（关注A轮）、投后管理资源、行业专家网络。',
+    needs: '具有明确市场潜力的创新型 AI/机器人项目。',
+    location: '北京',
+    completeness: 95,
+    isPro: true,
+    matchCount: 45,
+    viewCount: 1200,
+    requestCount: 28
+  },
+  {
+    id: 'u3',
+    name: '李大卫',
+    avatar: 'https://picsum.photos/seed/david/200',
+    slogan: '跨境电商物流优化专家。',
+    role: '物流专家',
+    industry: '供应链管理',
+    tags: ['跨境电商', '国际物流', '降本增效', '全球贸易'],
+    solving: '解决国际航运成本高、到货延迟等痛点。',
+    resources: '欧盟/美国海外仓资源、成本优化方案模板。',
+    needs: '计划进军海外市场的电商平台负责人。',
+    location: '深圳',
+    completeness: 70,
+    isPro: false,
+    matchCount: 8,
+    viewCount: 300,
+    requestCount: 3
+  },
+  {
+    id: 'u4',
+    name: '吴依玲',
+    avatar: 'https://picsum.photos/seed/elena/200',
+    slogan: '生活方式品牌进入亚洲市场的营销专家。',
+    role: '营销总监',
+    industry: '广告营销',
+    tags: ['品牌建设', '社交媒体', '亚洲市场', '增长'],
+    solving: '解决国外品牌在中国知名度低的问题。',
+    resources: '红人网络 (KOL/KOC)、社交媒体代理机构资源。',
+    needs: '寻求本土化营销的生活方式或美容品牌。',
+    location: '新加坡',
+    completeness: 90,
+    isPro: true,
+    matchCount: 33,
+    viewCount: 890,
+    requestCount: 15
+  },
+  {
+    id: 'u5',
+    name: '孙迈克',
+    avatar: 'https://picsum.photos/seed/mike/200',
+    slogan: '连续创业者，致力于打造下一代 ESG 效率工具。',
+    role: '创始人',
+    industry: '可持续发展',
+    tags: ['创业者', 'ESG', '绿色科技', '运营'],
+    solving: '中型企业复杂的 ESG 报告与合规挑战。',
+    resources: '丰富的创业运营经验、深厚的 ESG 领域知识。',
+    needs: '与碳核算软件供应商建立战略合作。',
+    location: '杭州',
+    completeness: 100,
+    isPro: true,
+    matchCount: 19,
+    viewCount: 620,
+    requestCount: 9
+  }
+];
+
+export const PACKAGES: Package[] = [
+  {
+    id: 'pkg_month',
+    name: '月卡套餐',
+    price: 18.8,
+    duration: PlanDuration.MONTH,
+    dailyCost: '0.63',
+    recommended: false,
+    description: '低门槛试用，满足短期紧急需求。'
+  },
+  {
+    id: 'pkg_quarter',
+    name: '季卡套餐',
+    price: 48.8,
+    duration: PlanDuration.QUARTER,
+    dailyCost: '0.54',
+    recommended: false,
+    description: '中期项目制需求的最佳选择。'
+  },
+  {
+    id: 'pkg_year',
+    name: '年卡套餐',
+    price: 188.0,
+    duration: PlanDuration.YEAR,
+    dailyCost: '0.52',
+    recommended: true,
+    description: '最具性价比，职场连接者的首选。'
+  }
+];

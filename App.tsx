@@ -1,0 +1,219 @@
+
+import React, { useState, useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { UserProfile, SubscriptionType } from './types';
+import { MOCK_USERS } from './constants';
+import ProfileView from './components/ProfileView';
+import MatchView from './components/MatchView';
+import PricingView from './components/PricingView';
+import AdminDashboard from './components/AdminDashboard';
+import { 
+  Users, 
+  Search, 
+  Crown, 
+  LayoutDashboard, 
+  LogOut, 
+  Settings,
+  Bell,
+  MessageSquare
+} from 'lucide-react';
+
+const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[4]); 
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  return (
+    <Router>
+      <div className="flex h-screen bg-slate-50">
+        {/* 侧边栏 */}
+        <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0`}>
+          <div className="p-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg">L</div>
+            {isSidebarOpen && <span className="text-xl font-bold tracking-tight">Linkr</span>}
+          </div>
+
+          <nav className="flex-1 px-4 py-4 space-y-2">
+            <SidebarLink to="/" icon={<LayoutDashboard size={20} />} label="控制面板" active />
+            <SidebarLink to="/match" icon={<Search size={20} />} label="智能匹配" />
+            <SidebarLink to="/profile" icon={<Users size={20} />} label="个人资料" />
+            <SidebarLink to="/upgrade" icon={<Crown size={20} />} label="Pro 会员权益" className="text-amber-400" />
+            <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
+          </nav>
+
+          <div className="p-4 border-t border-indigo-800 space-y-4">
+             {isSidebarOpen && (
+               <div className="flex items-center gap-3 mb-4">
+                  <img src={currentUser.avatar} alt="用户" className="w-10 h-10 rounded-full border-2 border-indigo-400" />
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-semibold truncate">{currentUser.name}</p>
+                    <p className="text-xs text-indigo-300 capitalize">{currentUser.isPro ? 'Pro 会员' : '免费版'}</p>
+                  </div>
+               </div>
+             )}
+             <button className="flex items-center gap-3 text-indigo-300 hover:text-white transition-colors w-full px-2">
+                <LogOut size={20} />
+                {isSidebarOpen && <span className="text-sm">退出登录</span>}
+             </button>
+          </div>
+        </aside>
+
+        {/* 主内容区 */}
+        <main className="flex-1 overflow-auto">
+          {/* 顶栏 */}
+          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-10 glass-effect">
+            <button 
+              onClick={() => setSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
+            >
+              <LayoutDashboard size={20} />
+            </button>
+            <div className="flex-1 max-w-xl mx-4 relative hidden md:block">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+               <input 
+                  type="text" 
+                  placeholder="快速搜索人脉、技能或资源..." 
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all"
+               />
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors relative">
+                <Bell size={20} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors">
+                <MessageSquare size={20} />
+              </button>
+              <div className="h-8 w-px bg-slate-200"></div>
+              <div className="flex items-center gap-2">
+                 <span className="text-sm font-medium text-slate-700 hidden sm:block">{currentUser.name}</span>
+                 <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100" />
+              </div>
+            </div>
+          </header>
+
+          <div className="p-8 max-w-7xl mx-auto">
+            <Routes>
+              <Route path="/" element={<Dashboard user={currentUser} />} />
+              <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
+              <Route path="/match" element={<MatchView user={currentUser} />} />
+              <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={() => setCurrentUser({...currentUser, isPro: true})} />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Routes>
+          </div>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+const SidebarLink: React.FC<{ to: string, icon: React.ReactNode, label: string, active?: boolean, className?: string }> = ({ to, icon, label, active, className }) => (
+  <Link 
+    to={to} 
+    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${active ? 'bg-indigo-700 text-white shadow-lg' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'} ${className || ''}`}
+  >
+    {icon}
+    <span className="text-sm font-medium">{label}</span>
+  </Link>
+);
+
+const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
+  <div className="space-y-8">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">欢迎回来, {user.name}!</h1>
+        <p className="text-slate-500">本周您的有效人脉网络增长了 <span className="text-indigo-600 font-semibold">+12%</span>。</p>
+      </div>
+      <Link to="/match" className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2 w-fit">
+        <Search size={18} />
+        发起智能匹配
+      </Link>
+    </div>
+
+    {/* 统计卡片 */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+       <StatCard label="匹配成功率" value="84%" subValue="环比增长 5%" icon={<Search className="text-blue-600" />} />
+       <StatCard label="资料曝光量" value={user.viewCount.toString()} subValue="超过 95% 的同行" icon={<Users className="text-green-600" />} />
+       <StatCard label="待处理请求" value={user.requestCount.toString()} subValue="3 条新消息" icon={<MessageSquare className="text-purple-600" />} />
+       <StatCard label="本周剩余额度" value={user.isPro ? "无限制" : "1/1"} subValue={user.isPro ? "Pro 会员权益" : "每周一重置"} icon={<Crown className="text-amber-500" />} />
+    </div>
+
+    {/* 付费引导卡片 */}
+    {!user.isPro && (
+      <div className="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl">
+         <div className="relative z-10 max-w-lg">
+           <h2 className="text-2xl font-bold mb-2">升级至 Linkr Pro</h2>
+           <p className="text-indigo-100 mb-6 text-lg">解锁无限次智能匹配、更高的资料权重，以及与顶级投资人和行业专家的直接沟通权限。</p>
+           <Link to="/upgrade" className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors inline-block">
+             查看订阅套餐
+           </Link>
+         </div>
+         <div className="absolute top-0 right-0 p-8 hidden lg:block opacity-20">
+           <Crown size={180} />
+         </div>
+      </div>
+    )}
+
+    {/* 推荐与进度 */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+       <div className="lg:col-span-2 space-y-6">
+         <h3 className="text-xl font-bold text-slate-800">猜您可能感兴趣的人脉</h3>
+         <div className="space-y-4">
+           {MOCK_USERS.slice(0, 3).map((u) => (
+             <div key={u.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-all group">
+                <img src={u.avatar} className="w-14 h-14 rounded-full ring-2 ring-indigo-50" />
+                <div className="flex-1">
+                   <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{u.name}</h4>
+                   <p className="text-sm text-slate-500 line-clamp-1">{u.slogan}</p>
+                   <div className="flex gap-2 mt-2">
+                     {u.tags.slice(0, 2).map(t => (
+                       <span key={t} className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{t}</span>
+                     ))}
+                   </div>
+                </div>
+                <button className="p-3 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                  <MessageSquare size={20} />
+                </button>
+             </div>
+           ))}
+         </div>
+       </div>
+
+       <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-fit">
+          <h3 className="text-lg font-bold mb-4">资料完善度</h3>
+          <div className="relative pt-1">
+            <div className="flex mb-2 items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                  已完成 {user.completeness}%
+                </span>
+              </div>
+            </div>
+            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-100">
+              <div style={{ width: `${user.completeness}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500 transition-all duration-1000"></div>
+            </div>
+            <ul className="text-xs text-slate-500 space-y-3">
+              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> 核心信息已验证</li>
+              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> 自动生成标签云</li>
+              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div> 绑定 LinkedIn (+15%)</li>
+              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div> 上传成功案例 (+20%)</li>
+            </ul>
+          </div>
+       </div>
+    </div>
+  </div>
+);
+
+const StatCard: React.FC<{ label: string, value: string, subValue: string, icon: React.ReactNode }> = ({ label, value, subValue, icon }) => (
+  <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:scale-[1.02] transition-transform duration-300">
+    <div className="flex items-center justify-between mb-4">
+      <div className="p-3 bg-slate-50 rounded-2xl">{icon}</div>
+      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+      <p className="text-xs text-slate-500">{subValue}</p>
+    </div>
+  </div>
+);
+
+export default App;
