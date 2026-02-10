@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { UserProfile } from './types';
-import { MOCK_USERS } from './constants';
-import ProfileView from './components/ProfileView';
-import MatchView from './components/MatchView';
-import PricingView from './components/PricingView';
-import AdminDashboard from './components/AdminDashboard';
+import { UserProfile } from './types.ts';
+import { MOCK_USERS } from './constants.ts';
+import ProfileView from './components/ProfileView.tsx';
+import MatchView from './components/MatchView.tsx';
+import PricingView from './components/PricingView.tsx';
+import AdminDashboard from './components/AdminDashboard.tsx';
 import { 
   Users, 
   Search, 
@@ -34,7 +34,7 @@ const App: React.FC = () => {
         <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0 z-20`}>
           <div className="p-6 flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg">L</div>
-            {isSidebarOpen && <span className="text-xl font-bold tracking-tight">Linkr</span>}
+            {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-white">Linkr</span>}
           </div>
 
           <nav className="flex-1 px-4 py-4 space-y-2">
@@ -50,12 +50,12 @@ const App: React.FC = () => {
                <div className="flex items-center gap-3 mb-4">
                   <img src={currentUser.avatar} alt="用户" className="w-10 h-10 rounded-full border-2 border-indigo-400" />
                   <div className="overflow-hidden">
-                    <p className="text-sm font-semibold truncate">{currentUser.name}</p>
+                    <p className="text-sm font-semibold truncate text-white">{currentUser.name}</p>
                     <p className="text-xs text-indigo-300 capitalize">{currentUser.isPro ? 'Pro 会员' : '免费版'}</p>
                   </div>
                </div>
              )}
-             <button className="flex items-center gap-3 text-indigo-300 hover:text-white transition-colors w-full px-2">
+             <button className="flex items-center gap-3 text-indigo-300 hover:text-white transition-colors w-full px-2 outline-none">
                 <LogOut size={20} />
                 {isSidebarOpen && <span className="text-sm">退出登录</span>}
              </button>
@@ -63,9 +63,9 @@ const App: React.FC = () => {
         </aside>
 
         {/* 主内容区 */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto flex flex-col">
           {/* 顶栏 */}
-          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30 glass-effect">
+          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30 glass-effect shrink-0">
             <button 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
               className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
@@ -77,7 +77,7 @@ const App: React.FC = () => {
                <input 
                   type="text" 
                   placeholder="快速搜索人脉、技能或资源..." 
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all outline-none"
                />
             </div>
             <div className="flex items-center gap-4">
@@ -89,12 +89,13 @@ const App: React.FC = () => {
                 <MessageSquare size={20} />
               </button>
               <div className="h-8 w-px bg-slate-200 mx-2"></div>
+              {/* 点击头像触发登录/注册 */}
               <button 
                 onClick={() => {
                   setIsLoginView(true);
                   setShowAuthModal(true);
                 }}
-                className="flex items-center gap-2 hover:opacity-80 transition-all p-1 pr-3 rounded-full hover:bg-slate-50"
+                className="flex items-center gap-2 hover:opacity-80 transition-all p-1 pr-3 rounded-full hover:bg-slate-50 outline-none"
               >
                  <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100 shadow-sm" />
                  <span className="text-sm font-bold text-slate-700 hidden sm:block">登录/注册</span>
@@ -102,9 +103,9 @@ const App: React.FC = () => {
             </div>
           </header>
 
-          <div className="p-8 max-w-7xl mx-auto">
+          <div className="p-8 max-w-7xl mx-auto w-full">
             <Routes>
-              {/* 首页改为匹配页 */}
+              {/* 首页严格设置为匹配页 */}
               <Route path="/" element={<MatchView user={currentUser} />} />
               <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
               <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
@@ -144,16 +145,16 @@ const App: React.FC = () => {
                      </div>
                   </div>
 
-                  <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                  <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none">
                      {isLoginView ? <LogIn size={18} /> : <UserPlus size={18} />}
                      {isLoginView ? '立即登录' : '注册新账号'}
                   </button>
 
                   <div className="flex items-center justify-between px-2">
-                     <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors">忘记密码？</button>
+                     <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors outline-none">忘记密码？</button>
                      <button 
                        onClick={() => setIsLoginView(!isLoginView)}
-                       className="text-xs font-bold text-indigo-600 hover:underline"
+                       className="text-xs font-bold text-indigo-600 hover:underline outline-none"
                      >
                        {isLoginView ? '还没有账号？去注册' : '已有账号？去登录'}
                      </button>
@@ -195,7 +196,6 @@ const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
       </Link>
     </div>
 
-    {/* 统计卡片 */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
        <StatCard label="匹配成功率" value="84%" subValue="环比增长 5%" icon={<Search className="text-blue-600" />} />
        <StatCard label="资料曝光量" value={user.viewCount.toString()} subValue="超过 95% 的同行" icon={<Users className="text-green-600" />} />
@@ -203,23 +203,21 @@ const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
        <StatCard label="本周剩余额度" value={user.isPro ? "无限制" : "1/1"} subValue={user.isPro ? "Pro 会员权益" : "每周一重置"} icon={<Crown className="text-amber-500" />} />
     </div>
 
-    {/* 付费引导卡片 */}
     {!user.isPro && (
       <div className="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl">
          <div className="relative z-10 max-w-lg">
-           <h2 className="text-2xl font-bold mb-2">升级至 Linkr Pro</h2>
+           <h2 className="text-2xl font-bold mb-2 text-white">升级至 Linkr Pro</h2>
            <p className="text-indigo-100 mb-6 text-lg">解锁无限次智能匹配、更高的资料权重，以及与顶级投资人和行业专家的直接沟通权限。</p>
            <Link to="/upgrade" className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors inline-block">
              查看订阅套餐
            </Link>
          </div>
          <div className="absolute top-0 right-0 p-8 hidden lg:block opacity-20">
-           <Crown size={180} />
+           <Crown size={180} className="text-white" />
          </div>
       </div>
     )}
 
-    {/* 推荐与进度 */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
        <div className="lg:col-span-2 space-y-6">
          <h3 className="text-xl font-bold text-slate-800">猜您可能感兴趣的人脉</h3>

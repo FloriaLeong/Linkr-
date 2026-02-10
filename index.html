@@ -27,13 +27,13 @@
       background: #e2e8f0;
       border-radius: 10px;
     }
-    /* 简单的首屏加载动画，防止白屏时的空洞感 */
     .initial-loader {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       background: #f8fafc;
+      transition: opacity 0.3s ease;
     }
     .loader-icon {
       width: 40px;
@@ -48,12 +48,12 @@
     }
   </style>
   <script>
-    // 解决浏览器环境没有 process 变量导致的白屏崩溃
-    window.process = window.process || { env: {} };
-    // 如果没有 API_KEY 环境变量，在非生产环境设置占位符防止某些 SDK 报错
-    if (!window.process.env.API_KEY) {
-      window.process.env.API_KEY = "";
-    }
+    // 必须在任何模块加载前注入 process 对象，确保环境变量访问不崩溃
+    window.process = { 
+      env: { 
+        API_KEY: "" // Vercel 会在运行时自动注入实际的 process.env.API_KEY
+      } 
+    };
   </script>
 <script type="importmap">
 {
@@ -74,17 +74,14 @@
       <div class="loader-icon"></div>
     </div>
   </div>
-  <!-- 显式引入入口文件，确保在 importmap 解析后执行 -->
+  <!-- 显式使用 .tsx 扩展名引入入口 -->
   <script type="module" src="./index.tsx"></script>
   <script>
-    // 应用加载完成后隐藏 loader
     window.addEventListener('load', () => {
       const loader = document.getElementById('initial-loader');
       if (loader) {
-        setTimeout(() => {
-          loader.style.opacity = '0';
-          setTimeout(() => loader.remove(), 300);
-        }, 500);
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 300);
       }
     });
   </script>

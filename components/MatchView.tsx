@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { UserProfile, MatchResult } from '../types';
-import { MOCK_USERS } from '../constants';
-import { getMatchingResults } from '../services/geminiService';
+import { UserProfile, MatchResult } from '../types.ts';
+import { MOCK_USERS } from '../constants.ts';
+import { getMatchingResults } from '../services/geminiService.ts';
 import { Search, Sparkles, AlertCircle, MessageSquare, Heart, ExternalLink, ArrowRight, Loader2, Filter, Crown, Users } from 'lucide-react';
 
 const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
@@ -30,14 +30,14 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
       setResults(combined);
       if (combined.length > 0) setSelectedResult(combined[0]);
     } catch (err) {
-      setError('匹配引擎连接超时。请检查 API 密钥配置。');
+      setError('匹配引擎连接失败。请确保您已在环境变量中配置有效的 API_KEY。');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full">
       <div className="max-w-3xl mx-auto space-y-6 text-center">
          <div className="inline-flex p-3 bg-indigo-50 text-indigo-600 rounded-2xl mb-2">
             <Sparkles size={28} />
@@ -50,18 +50,18 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
                value={query}
                onChange={(e) => setQuery(e.target.value)}
                placeholder="例如：'正在寻找一位在 AI 领域有经验的技术顾问，希望对方曾主导过 SaaS 平台从零到一的规模化增长...'"
-               className="w-full p-6 pb-20 bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-3xl text-lg text-slate-700 min-h-[180px] transition-all shadow-xl shadow-slate-200/50 resize-none group-hover:border-slate-300"
+               className="w-full p-6 pb-20 bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-3xl text-lg text-slate-700 min-h-[180px] transition-all shadow-xl shadow-slate-200/50 resize-none group-hover:border-slate-300 outline-none"
             />
-            <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between">
-               <div className="flex gap-2">
-                 <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
+            <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between pointer-events-none">
+               <div className="flex gap-2 pointer-events-auto">
+                 <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-2 transition-all outline-none">
                    <Filter size={16} /> 快速模式
                  </button>
                </div>
                <button 
                   onClick={handleMatch}
                   disabled={loading || !query.trim()}
-                  className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto outline-none"
                >
                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
                  {loading ? '正在分析语义...' : '开始智能匹配'}
@@ -84,7 +84,6 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
 
       {results.length > 0 && (
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12 animate-in slide-in-from-bottom-8 duration-500">
-            {/* 结果列表 */}
             <div className="lg:col-span-5 space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                <div className="flex items-center justify-between sticky top-0 bg-slate-50 py-2 z-10">
                   <h3 className="font-bold text-slate-800 flex items-center gap-2">
@@ -121,7 +120,6 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
                ))}
             </div>
 
-            {/* 详情预览 */}
             <div className="lg:col-span-7">
                {selectedResult ? (
                   <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl p-8 sticky top-24 space-y-8 animate-in zoom-in-95 duration-300">
@@ -141,7 +139,7 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
                            </div>
                         </div>
                         <div className="flex gap-2">
-                           <button className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all shadow-sm">
+                           <button className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all shadow-sm outline-none">
                               <Heart size={24} />
                            </button>
                         </div>
@@ -174,11 +172,11 @@ const MatchView: React.FC<{ user: UserProfile }> = ({ user }) => {
                      </div>
 
                      <div className="flex gap-4 pt-4 border-t border-slate-100">
-                        <button className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                        <button className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none">
                            <MessageSquare size={20} />
                            发送联系请求
                         </button>
-                        <button className="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center gap-2">
+                        <button className="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center gap-2 outline-none">
                            <ExternalLink size={20} />
                            查看完整档案
                         </button>
