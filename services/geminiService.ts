@@ -2,19 +2,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserProfile, MatchResult } from "../types";
 
-// 使用 process.env.API_KEY 初始化，并增加防御性处理
-const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
-
 export const getMatchingResults = async (
   query: string,
   allProfiles: UserProfile[]
 ): Promise<MatchResult[]> => {
+  const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.error("API_KEY is missing. Please check your environment variables.");
+    console.warn("API_KEY is missing. Matching results will be empty.");
     return [];
   }
 
+  // 每次请求时创建实例，确保获取到最新的 API Key（适配 Vercel 环境注入）
+  const ai = new GoogleGenAI({ apiKey });
   const model = "gemini-3-flash-preview";
 
   const profileContext = allProfiles.map(p => ({
@@ -42,7 +41,7 @@ export const getMatchingResults = async (
       
       返回要求:
       必须返回 JSON 数组。
-      每个对象包含: userId, score (0-100), 以及 2-3 个简短的中文匹配理由标签 (例如: "资源高度契合", "行业资深专家", "跨界合作潜力")。`,
+      每个对象包含: userId, score (0-100), 以及 2-3 个简短的中文匹配理由标签。`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {

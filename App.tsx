@@ -21,237 +21,7 @@ import {
   UserPlus
 } from 'lucide-react';
 
-const App: React.FC = () => {
-  // 默认登录用户：孙迈克 (管理员)
-  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[4]); 
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoginView, setIsLoginView] = useState(true);
-
-  // 注册/登录表单状态
-  const [authEmail, setAuthEmail] = useState('');
-  const [authName, setAuthName] = useState('');
-
-  const handleUpgrade = (duration: PlanDuration) => {
-    const now = new Date();
-    let expiry = new Date();
-    if (duration === PlanDuration.MONTH) expiry.setMonth(now.getMonth() + 1);
-    if (duration === PlanDuration.QUARTER) expiry.setMonth(now.getMonth() + 3);
-    if (duration === PlanDuration.YEAR) expiry.setFullYear(now.getFullYear() + 1);
-
-    setCurrentUser({
-      ...currentUser,
-      isPro: true,
-      expiryDate: expiry.toISOString().split('T')[0]
-    });
-  };
-
-  const handleAuthAction = () => {
-    if (isLoginView) {
-      // 模拟登录：如果是已存在的用户邮箱，则切换
-      const found = MOCK_USERS.find(u => u.email === authEmail);
-      if (found) setCurrentUser(found);
-    } else {
-      // 模拟注册：创建一个新用户并自动登录
-      const newUser: UserProfile = {
-        id: `u${Date.now()}`,
-        name: authName || '新用户',
-        avatar: `https://picsum.photos/seed/${Math.random()}/200`,
-        slogan: '新加入 Linkr 的人脉探索者',
-        role: '待完善',
-        industry: '待完善',
-        tags: [],
-        solving: '',
-        resources: '',
-        needs: '',
-        location: '未知',
-        completeness: 10,
-        isPro: false,
-        isAdmin: false,
-        matchCount: 0,
-        viewCount: 0,
-        requestCount: 0,
-        phone: '',
-        email: authEmail,
-        linkedin: ''
-      };
-      setCurrentUser(newUser);
-    }
-    setShowAuthModal(false);
-    setAuthEmail('');
-    setAuthName('');
-  };
-
-  return (
-    <Router>
-      <div className="flex h-screen bg-slate-50">
-        {/* 侧边栏 */}
-        <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0 z-20`}>
-          <div className="p-6 flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg text-white">L</div>
-            {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-white">Linkr</span>}
-          </div>
-
-          <nav className="flex-1 px-4 py-4 space-y-2">
-            <SidebarLink to="/" icon={<Search size={20} />} label="智能匹配" />
-            <SidebarLink to="/dashboard" icon={<LayoutDashboard size={20} />} label="控制面板" />
-            <SidebarLink to="/profile" icon={<Users size={20} />} label="个人资料" />
-            <SidebarLink to="/upgrade" icon={<Crown size={20} />} label="Pro 会员权益" className="text-amber-400" />
-            
-            {/* 权限控制：仅管理员可见 */}
-            {currentUser.isAdmin && (
-              <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
-            )}
-          </nav>
-
-          <div className="p-4 border-t border-indigo-800 space-y-4">
-             {isSidebarOpen && (
-               <div className="flex items-center gap-3 mb-4">
-                  <img src={currentUser.avatar} alt="用户" className="w-10 h-10 rounded-full border-2 border-indigo-400" />
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-semibold truncate text-white">{currentUser.name}</p>
-                    <p className="text-xs text-indigo-300 capitalize">
-                      {currentUser.isAdmin ? '系统管理员' : currentUser.isPro ? 'Pro 会员' : '免费版'}
-                    </p>
-                  </div>
-               </div>
-             )}
-             <button className="flex items-center gap-3 text-indigo-300 hover:text-white transition-colors w-full px-2 outline-none">
-                <LogOut size={20} />
-                {isSidebarOpen && <span className="text-sm">退出登录</span>}
-             </button>
-          </div>
-        </aside>
-
-        {/* 主内容区 */}
-        <main className="flex-1 overflow-auto flex flex-col">
-          {/* 顶栏 */}
-          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30 glass-effect shrink-0">
-            <button 
-              onClick={() => setSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
-            >
-              <LayoutDashboard size={20} />
-            </button>
-            <div className="flex-1 max-w-xl mx-4 relative hidden md:block">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-               <input 
-                  type="text" 
-                  placeholder="快速搜索人脉、技能或资源..." 
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all outline-none"
-               />
-            </div>
-            <div className="flex items-center gap-4">
-              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors relative">
-                <Bell size={20} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors">
-                <MessageSquare size={20} />
-              </button>
-              <div className="h-8 w-px bg-slate-200 mx-2"></div>
-              <button 
-                onClick={() => {
-                  setIsLoginView(true);
-                  setShowAuthModal(true);
-                }}
-                className="flex items-center gap-2 hover:opacity-80 transition-all p-1 pr-3 rounded-full hover:bg-slate-50 outline-none"
-              >
-                 <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100 shadow-sm" />
-                 <span className="text-sm font-bold text-slate-700 hidden sm:block">登录/注册</span>
-              </button>
-            </div>
-          </header>
-
-          <div className="p-8 max-w-7xl mx-auto w-full">
-            <Routes>
-              <Route path="/" element={<MatchView user={currentUser} />} />
-              <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
-              <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
-              <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={handleUpgrade} />} />
-              
-              {/* 路由权限拦截 */}
-              <Route 
-                path="/admin" 
-                element={currentUser.isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />} 
-              />
-            </Routes>
-          </div>
-        </main>
-
-        {/* 登录/注册模态框 */}
-        {showAuthModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
-            <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-               <button 
-                 onClick={() => setShowAuthModal(false)}
-                 className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"
-               >
-                 <X size={20} />
-               </button>
-
-               <div className="p-10 space-y-8">
-                  <div className="text-center space-y-2">
-                     <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-bold text-3xl shadow-xl shadow-indigo-100 mx-auto mb-4">L</div>
-                     <h2 className="text-2xl font-bold text-slate-900">{isLoginView ? '欢迎回来' : '开启 Linkr 之旅'}</h2>
-                     <p className="text-slate-500">{isLoginView ? '登录以继续您的商务连接' : '加入全球最精准的人脉智能匹配网络'}</p>
-                  </div>
-
-                  <div className="space-y-4">
-                     {!isLoginView && (
-                       <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-400 uppercase ml-1">姓名</label>
-                          <input 
-                            type="text" 
-                            placeholder="如何称呼您？" 
-                            className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
-                            value={authName}
-                            onChange={(e) => setAuthName(e.target.value)}
-                          />
-                       </div>
-                     )}
-                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">手机号 / 邮箱</label>
-                        <input 
-                          type="text" 
-                          placeholder="请输入您的账号" 
-                          className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
-                          value={authEmail}
-                          onChange={(e) => setAuthEmail(e.target.value)}
-                        />
-                     </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">密码</label>
-                        <input type="password" placeholder="••••••••" className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" />
-                     </div>
-                  </div>
-
-                  <button 
-                    onClick={handleAuthAction}
-                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none"
-                  >
-                     {isLoginView ? <LogIn size={18} /> : <UserPlus size={18} />}
-                     {isLoginView ? '立即登录' : '注册并登录'}
-                  </button>
-
-                  <div className="flex items-center justify-between px-2">
-                     <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors outline-none">忘记密码？</button>
-                     <button 
-                       onClick={() => setIsLoginView(!isLoginView)}
-                       className="text-xs font-bold text-indigo-600 hover:underline outline-none"
-                     >
-                       {isLoginView ? '还没有账号？去注册' : '已有账号？去登录'}
-                     </button>
-                  </div>
-               </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </Router>
-  );
-};
+// --- 子组件定义（前置以避免 TDZ 错误） ---
 
 const SidebarLink: React.FC<{ to: string, icon: React.ReactNode, label: string, className?: string }> = ({ to, icon, label, className }) => {
   const location = useLocation();
@@ -267,6 +37,19 @@ const SidebarLink: React.FC<{ to: string, icon: React.ReactNode, label: string, 
     </Link>
   );
 };
+
+const StatCard: React.FC<{ label: string, value: string, subValue: string, icon: React.ReactNode }> = ({ label, value, subValue, icon }) => (
+  <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:scale-[1.02] transition-transform duration-300">
+    <div className="flex items-center justify-between mb-4">
+      <div className="p-3 bg-slate-50 rounded-2xl">{icon}</div>
+      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+      <p className="text-xs text-slate-500">{subValue}</p>
+    </div>
+  </div>
+);
 
 const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
   <div className="space-y-8 animate-in fade-in duration-500">
@@ -352,17 +135,226 @@ const Dashboard: React.FC<{ user: UserProfile }> = ({ user }) => (
   </div>
 );
 
-const StatCard: React.FC<{ label: string, value: string, subValue: string, icon: React.ReactNode }> = ({ label, value, subValue, icon }) => (
-  <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:scale-[1.02] transition-transform duration-300">
-    <div className="flex items-center justify-between mb-4">
-      <div className="p-3 bg-slate-50 rounded-2xl">{icon}</div>
-      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</span>
-    </div>
-    <div className="space-y-1">
-      <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
-      <p className="text-xs text-slate-500">{subValue}</p>
-    </div>
-  </div>
-);
+// --- 主组件 App ---
+
+const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[4]); 
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authName, setAuthName] = useState('');
+
+  const handleUpgrade = (duration: PlanDuration) => {
+    const now = new Date();
+    let expiry = new Date();
+    if (duration === PlanDuration.MONTH) expiry.setMonth(now.getMonth() + 1);
+    if (duration === PlanDuration.QUARTER) expiry.setMonth(now.getMonth() + 3);
+    if (duration === PlanDuration.YEAR) expiry.setFullYear(now.getFullYear() + 1);
+
+    setCurrentUser({
+      ...currentUser,
+      isPro: true,
+      expiryDate: expiry.toISOString().split('T')[0]
+    });
+  };
+
+  const handleAuthAction = () => {
+    if (isLoginView) {
+      const found = MOCK_USERS.find(u => u.email === authEmail);
+      if (found) setCurrentUser(found);
+    } else {
+      const newUser: UserProfile = {
+        id: `u${Date.now()}`,
+        name: authName || '新用户',
+        avatar: `https://picsum.photos/seed/${Math.random()}/200`,
+        slogan: '新加入 Linkr 的人脉探索者',
+        role: '待完善',
+        industry: '待完善',
+        tags: [],
+        solving: '',
+        resources: '',
+        needs: '',
+        location: '未知',
+        completeness: 10,
+        isPro: false,
+        isAdmin: false,
+        matchCount: 0,
+        viewCount: 0,
+        requestCount: 0,
+        phone: '',
+        email: authEmail,
+        linkedin: ''
+      };
+      setCurrentUser(newUser);
+    }
+    setShowAuthModal(false);
+    setAuthEmail('');
+    setAuthName('');
+  };
+
+  return (
+    <Router>
+      <div className="flex h-screen bg-slate-50">
+        <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-indigo-900 text-white transition-all duration-300 flex flex-col h-full sticky top-0 z-20`}>
+          <div className="p-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg text-white">L</div>
+            {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-white">Linkr</span>}
+          </div>
+
+          <nav className="flex-1 px-4 py-4 space-y-2">
+            <SidebarLink to="/" icon={<Search size={20} />} label="智能匹配" />
+            <SidebarLink to="/dashboard" icon={<LayoutDashboard size={20} />} label="控制面板" />
+            <SidebarLink to="/profile" icon={<Users size={20} />} label="个人资料" />
+            <SidebarLink to="/upgrade" icon={<Crown size={20} />} label="Pro 会员权益" className="text-amber-400" />
+            
+            {currentUser.isAdmin && (
+              <SidebarLink to="/admin" icon={<Settings size={20} />} label="系统管理" />
+            )}
+          </nav>
+
+          <div className="p-4 border-t border-indigo-800 space-y-4">
+             {isSidebarOpen && (
+               <div className="flex items-center gap-3 mb-4">
+                  <img src={currentUser.avatar} alt="用户" className="w-10 h-10 rounded-full border-2 border-indigo-400" />
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-semibold truncate text-white">{currentUser.name}</p>
+                    <p className="text-xs text-indigo-300 capitalize">
+                      {currentUser.isAdmin ? '系统管理员' : currentUser.isPro ? 'Pro 会员' : '免费版'}
+                    </p>
+                  </div>
+               </div>
+             )}
+             <button className="flex items-center gap-3 text-indigo-300 hover:text-white transition-colors w-full px-2 outline-none">
+                <LogOut size={20} />
+                {isSidebarOpen && <span className="text-sm">退出登录</span>}
+             </button>
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto flex flex-col">
+          <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30 glass-effect shrink-0">
+            <button 
+              onClick={() => setSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
+            >
+              <LayoutDashboard size={20} />
+            </button>
+            <div className="flex-1 max-w-xl mx-4 relative hidden md:block">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+               <input 
+                  type="text" 
+                  placeholder="快速搜索人脉、技能或资源..." 
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all outline-none"
+               />
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors relative">
+                <Bell size={20} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              <button className="p-2 text-slate-500 hover:text-indigo-600 transition-colors">
+                <MessageSquare size={20} />
+              </button>
+              <div className="h-8 w-px bg-slate-200 mx-2"></div>
+              <button 
+                onClick={() => {
+                  setIsLoginView(true);
+                  setShowAuthModal(true);
+                }}
+                className="flex items-center gap-2 hover:opacity-80 transition-all p-1 pr-3 rounded-full hover:bg-slate-50 outline-none"
+              >
+                 <img src={currentUser.avatar} className="w-8 h-8 rounded-full border border-indigo-100 shadow-sm" />
+                 <span className="text-sm font-bold text-slate-700 hidden sm:block">登录/注册</span>
+              </button>
+            </div>
+          </header>
+
+          <div className="p-8 max-w-7xl mx-auto w-full">
+            <Routes>
+              <Route path="/" element={<MatchView user={currentUser} />} />
+              <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
+              <Route path="/profile" element={<ProfileView user={currentUser} onUpdate={setCurrentUser} />} />
+              <Route path="/upgrade" element={<PricingView user={currentUser} onUpgrade={handleUpgrade} />} />
+              <Route 
+                path="/admin" 
+                element={currentUser.isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />} 
+              />
+            </Routes>
+          </div>
+        </main>
+
+        {showAuthModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+            <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+               <button 
+                 onClick={() => setShowAuthModal(false)}
+                 className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+               >
+                 <X size={20} />
+               </button>
+
+               <div className="p-10 space-y-8">
+                  <div className="text-center space-y-2">
+                     <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-bold text-3xl shadow-xl shadow-indigo-100 mx-auto mb-4">L</div>
+                     <h2 className="text-2xl font-bold text-slate-900">{isLoginView ? '欢迎回来' : '开启 Linkr 之旅'}</h2>
+                     <p className="text-slate-500">{isLoginView ? '登录以继续您的商务连接' : '加入全球最精准的人脉智能匹配网络'}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                     {!isLoginView && (
+                       <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-400 uppercase ml-1">姓名</label>
+                          <input 
+                            type="text" 
+                            placeholder="如何称呼您？" 
+                            className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
+                            value={authName}
+                            onChange={(e) => setAuthName(e.target.value)}
+                          />
+                       </div>
+                     )}
+                     <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">手机号 / 邮箱</label>
+                        <input 
+                          type="text" 
+                          placeholder="请输入您的账号" 
+                          className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" 
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                        />
+                     </div>
+                     <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">密码</label>
+                        <input type="password" placeholder="••••••••" className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none" />
+                     </div>
+                  </div>
+
+                  <button 
+                    onClick={handleAuthAction}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 outline-none"
+                  >
+                     {isLoginView ? <LogIn size={18} /> : <UserPlus size={18} />}
+                     {isLoginView ? '立即登录' : '注册并登录'}
+                  </button>
+
+                  <div className="flex items-center justify-between px-2">
+                     <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors outline-none">忘记密码？</button>
+                     <button 
+                       onClick={() => setIsLoginView(!isLoginView)}
+                       className="text-xs font-bold text-indigo-600 hover:underline outline-none"
+                     >
+                       {isLoginView ? '还没有账号？去注册' : '已有账号？去登录'}
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Router>
+  );
+};
 
 export default App;
